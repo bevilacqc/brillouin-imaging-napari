@@ -121,3 +121,14 @@ exclude = [
 
 target-version = "py310"
 fix = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["src/brillouin_imaging/_tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers"
+markers = [
+    "qt: marks tests as requiring Qt (deselect with '-m \"not qt\"')",
+]
