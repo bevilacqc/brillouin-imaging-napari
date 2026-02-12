@@ -8,11 +8,15 @@ This test suite follows the [napari plugin testing guidelines](https://napari.or
 
 ### Key Practices
 
-1. **Use napari fixtures**: Use `make_napari_viewer` fixture for viewer instances (ensures proper cleanup)
+1. **Use napari fixtures**: Use `make_napari_viewer` fixture provided by napari for viewer instances (ensures proper cleanup)
 2. **Use pytest fixtures**: Use `tmp_path` for temporary files instead of `tempfile` module
 3. **Use qtbot for Qt widgets**: Use `qtbot.addWidget()` for proper Qt widget cleanup
 4. **Mock external dependencies**: Mock file I/O and external services when possible
 5. **Test plugin contributions**: Test reader plugins and widget plugins with proper integration
+
+## Test Structure
+
+Tests are located in the root `tests/` directory (not inside the `src/` package), following standard Python project conventions and napari plugin templates.
 
 ## Running Tests
 
@@ -25,32 +29,38 @@ pip install -e ".[testing]"
 ### Run all tests
 
 ```bash
-pytest src/brillouin_imaging/_tests/
+pytest
+```
+
+or explicitly:
+
+```bash
+pytest tests/
 ```
 
 ### Run tests with verbose output
 
 ```bash
-pytest src/brillouin_imaging/_tests/ -v
+pytest tests/ -v
 ```
 
 ### Run specific test files
 
 ```bash
 # Test reader functionality
-pytest src/brillouin_imaging/_tests/test_reader.py
+pytest tests/test_reader.py
 
 # Test sample data functionality
-pytest src/brillouin_imaging/_tests/test_sample_data.py
+pytest tests/test_sample_data.py
 
 # Test spectra viewer functionality
-pytest src/brillouin_imaging/_tests/test_spectra_viewer.py
+pytest tests/test_spectra_viewer.py
 ```
 
 ### Run tests with coverage
 
 ```bash
-pytest src/brillouin_imaging/_tests/ --cov=brillouin_imaging --cov-report=html
+pytest tests/ --cov=brillouin_imaging --cov-report=html
 ```
 
 ### Skip Qt-dependent tests
@@ -58,10 +68,10 @@ pytest src/brillouin_imaging/_tests/ --cov=brillouin_imaging --cov-report=html
 Some tests require Qt and may not work in headless environments. To skip them:
 
 ```bash
-pytest src/brillouin_imaging/_tests/ -m "not qt"
+pytest tests/ -m "not qt"
 ```
 
-## Test Structure
+## Test Files
 
 - **test_reader.py**: Tests for the napari reader plugin functionality
   - Tests for `napari_get_reader()` function (file format detection)
@@ -81,21 +91,23 @@ pytest src/brillouin_imaging/_tests/ -m "not qt"
   - **Follows napari guidelines**: Uses `make_napari_viewer` fixture and `qtbot.addWidget()`
 
 - **conftest.py**: Pytest configuration following napari guidelines
-  - `make_napari_viewer` fixture for proper viewer lifecycle management
   - Qt offscreen mode configuration for CI/CD
   - Custom markers for Qt-dependent tests
+  - **Note**: `make_napari_viewer` fixture is provided by napari itself (from `napari.utils._testsupport`)
 
 ## Napari-Specific Features
 
 ### make_napari_viewer Fixture
 
-The `make_napari_viewer` fixture ensures proper viewer cleanup after tests:
+The `make_napari_viewer` fixture is **provided by napari** and ensures proper viewer cleanup after tests:
 
 ```python
 def test_something(make_napari_viewer):
     viewer = make_napari_viewer()
     # viewer is automatically closed after test
 ```
+
+This fixture is available from `napari.utils._testsupport` and does not need to be redefined.
 
 ### qtbot Integration
 

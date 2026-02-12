@@ -124,7 +124,7 @@ fix = true
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-testpaths = ["src/brillouin_imaging/_tests"]
+testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
