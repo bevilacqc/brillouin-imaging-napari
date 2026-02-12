@@ -1,6 +1,18 @@
 # Tests for brillouin-imaging-napari
 
-This directory contains pytest tests for the brillouin-imaging-napari plugin.
+This directory contains pytest tests for the brillouin-imaging-napari plugin, following napari's official testing guidelines.
+
+## Testing Guidelines
+
+This test suite follows the [napari plugin testing guidelines](https://napari.org/stable/plugins/testing_and_publishing/test.html) which recommend:
+
+### Key Practices
+
+1. **Use napari fixtures**: Use `make_napari_viewer` fixture for viewer instances (ensures proper cleanup)
+2. **Use pytest fixtures**: Use `tmp_path` for temporary files instead of `tempfile` module
+3. **Use qtbot for Qt widgets**: Use `qtbot.addWidget()` for proper Qt widget cleanup
+4. **Mock external dependencies**: Mock file I/O and external services when possible
+5. **Test plugin contributions**: Test reader plugins and widget plugins with proper integration
 
 ## Running Tests
 
@@ -52,21 +64,65 @@ pytest src/brillouin_imaging/_tests/ -m "not qt"
 ## Test Structure
 
 - **test_reader.py**: Tests for the napari reader plugin functionality
-  - Tests for `napari_get_reader()` function
-  - Tests for `reader_function()` 
+  - Tests for `napari_get_reader()` function (file format detection)
+  - Tests for `reader_function()` (widget creation and viewer integration)
   - Tests for `create_brim_widget()` helper (Qt-dependent)
+  - **Follows napari guidelines**: Uses `tmp_path` fixture for temporary files
 
 - **test_sample_data.py**: Tests for sample data loading functionality
   - Tests for `load_sample_data()` function
   - Tests for individual sample data functions (drosophila, zfeye, zfSBS, beadsFTBM)
   - Tests for both EMBL and Google Cloud Storage URLs
+  - **Follows napari guidelines**: Uses appropriate mocking for external services
 
 - **test_spectra_viewer.py**: Tests for the spectra viewer widget (Qt-dependent)
   - Tests for `ShowSpectrum` widget initialization
   - Tests for spectrum loading and plotting functionality
+  - **Follows napari guidelines**: Uses `make_napari_viewer` fixture and `qtbot.addWidget()`
+
+- **conftest.py**: Pytest configuration following napari guidelines
+  - `make_napari_viewer` fixture for proper viewer lifecycle management
+  - Qt offscreen mode configuration for CI/CD
+  - Custom markers for Qt-dependent tests
+
+## Napari-Specific Features
+
+### make_napari_viewer Fixture
+
+The `make_napari_viewer` fixture ensures proper viewer cleanup after tests:
+
+```python
+def test_something(make_napari_viewer):
+    viewer = make_napari_viewer()
+    # viewer is automatically closed after test
+```
+
+### qtbot Integration
+
+For Qt widget tests, use `qtbot.addWidget()` for proper cleanup:
+
+```python
+@pytest.mark.qt
+def test_widget(qtbot):
+    widget = create_some_widget()
+    qtbot.addWidget(widget.native)  # Ensures proper cleanup
+    # test widget
+```
+
+### Temporary Files
+
+Use pytest's `tmp_path` fixture instead of `tempfile`:
+
+```python
+def test_with_file(tmp_path):
+    test_file = tmp_path / "test.brim.zarr"
+    test_file.mkdir()
+    # test_file is automatically cleaned up
+```
 
 ## Notes
 
 - Qt-dependent tests require a display or offscreen Qt platform
 - Tests use mocking extensively to avoid dependencies on external files
-- The conftest.py file configures pytest with custom markers and Qt setup
+- The conftest.py file configures pytest with napari-recommended practices
+- All tests follow napari's plugin testing guidelines for reliability and maintainability

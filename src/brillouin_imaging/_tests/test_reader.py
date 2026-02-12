@@ -1,5 +1,4 @@
 """Tests for the reader module."""
-import os
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 import pytest
@@ -30,58 +29,53 @@ class TestNapariGetReader:
         assert result is None
 
     @patch('brillouin_imaging._reader.brim.File')
-    def test_returns_reader_function_for_valid_zarr(self, mock_brim_file):
+    def test_returns_reader_function_for_valid_zarr(self, mock_brim_file, tmp_path):
         """Test that napari_get_reader returns reader function for valid zarr."""
         # Create a temporary directory to simulate a zarr file
-        import tempfile
-        with tempfile.TemporaryDirectory() as tmpdir:
-            zarr_path = os.path.join(tmpdir, "test.brim.zarr")
-            os.makedirs(zarr_path)
-            
-            # Mock the brim.File to not raise an exception
-            mock_brim_file.return_value = MagicMock()
-            
-            result = napari_get_reader(zarr_path)
-            assert result is not None
-            assert result == reader_function
+        zarr_path = tmp_path / "test.brim.zarr"
+        zarr_path.mkdir()
+        
+        # Mock the brim.File to not raise an exception
+        mock_brim_file.return_value = MagicMock()
+        
+        result = napari_get_reader(str(zarr_path))
+        assert result is not None
+        assert result == reader_function
 
     @patch('brillouin_imaging._reader.brim.File')
-    def test_returns_reader_function_for_valid_zip(self, mock_brim_file):
+    def test_returns_reader_function_for_valid_zip(self, mock_brim_file, tmp_path):
         """Test that napari_get_reader returns reader function for valid zip."""
         # Create a temporary zip file
-        import tempfile
-        with tempfile.NamedTemporaryFile(suffix=".brim.zip", delete=False) as tmpfile:
-            zip_path = tmpfile.name
-            
-        try:
-            # Mock the brim.File to not raise an exception
-            mock_brim_file.return_value = MagicMock()
-            
-            result = napari_get_reader(zip_path)
-            assert result is not None
-            assert result == reader_function
-        finally:
-            os.unlink(zip_path)
+        zip_path = tmp_path / "test.brim.zip"
+        zip_path.touch()
+        
+        # Mock the brim.File to not raise an exception
+        mock_brim_file.return_value = MagicMock()
+        
+        result = napari_get_reader(str(zip_path))
+        assert result is not None
+        assert result == reader_function
 
     @patch('brillouin_imaging._reader.brim.File')
-    def test_returns_none_when_brim_file_raises_exception(self, mock_brim_file):
+    def test_returns_none_when_brim_file_raises_exception(self, mock_brim_file, tmp_path):
         """Test that napari_get_reader returns None when brim.File raises exception."""
-        import tempfile
-        with tempfile.NamedTemporaryFile(suffix=".brim.zip", delete=False) as tmpfile:
-            zip_path = tmpfile.name
-            
-        try:
-            # Mock the brim.File to raise an exception
-            mock_brim_file.side_effect = Exception("Cannot read file")
-            
-            result = napari_get_reader(zip_path)
-            assert result is None
-        finally:
-            os.unlink(zip_path)
+        # Create a temporary zip file
+        zip_path = tmp_path / "test.brim.zip"
+        zip_path.touch()
+        
+        # Mock the brim.File to raise an exception
+        mock_brim_file.side_effect = Exception("Cannot read file")
+        
+        result = napari_get_reader(str(zip_path))
+        assert result is None
 
 
 class TestReaderFunction:
-    """Tests for reader_function."""
+    """Tests for reader_function.
+    
+    Note: These tests use mocking because testing with a real napari viewer
+    requires actual brim files and full Qt environment setup.
+    """
 
     @patch('brillouin_imaging._reader.napari.current_viewer')
     @patch('brillouin_imaging._reader.brim.File')
@@ -155,6 +149,9 @@ class TestCreateBrimWidget:
         # Call the function
         widget = create_brim_widget(mock_file)
         
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
+        
         # Verify the result
         assert isinstance(widget, Container)
 
@@ -170,6 +167,9 @@ class TestCreateBrimWidget:
         
         # Call the function
         widget = create_brim_widget(mock_file)
+        
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
         
         # Verify the widget has the expected components
         assert len(widget) == 5  # 4 combo boxes + 1 button
@@ -187,6 +187,9 @@ class TestCreateBrimWidget:
         
         # Call the function
         widget = create_brim_widget(mock_file)
+        
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
         
         # Check that data_groups combo box has the right choices
         data_combo = widget[0]  # First widget should be data_groups

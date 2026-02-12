@@ -20,36 +20,45 @@ class TestShowSpectrum:
     """Tests for ShowSpectrum widget."""
 
     @pytest.mark.qt
-    def test_show_spectrum_initialization(self, qtbot):
+    def test_show_spectrum_initialization(self, qtbot, make_napari_viewer):
         """Test that ShowSpectrum widget initializes correctly."""
-        # Create a mock viewer
-        mock_viewer = MagicMock()
+        # Create a viewer using the napari fixture
+        viewer = make_napari_viewer()
         
         # Initialize the widget
-        widget = ShowSpectrum(mock_viewer)
+        widget = ShowSpectrum(viewer)
+        
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
         
         # Verify basic attributes are set
-        assert widget._viewer == mock_viewer
+        assert widget._viewer == viewer
         assert hasattr(widget, 'fig')
         assert hasattr(widget, 'ax')
         assert widget.spectrum_ymax == 0
         assert widget.spectrum_ymin == 1E6
 
     @pytest.mark.qt
-    def test_show_spectrum_has_checkbox(self, qtbot):
+    def test_show_spectrum_has_checkbox(self, qtbot, make_napari_viewer):
         """Test that ShowSpectrum widget has autoscale checkbox."""
-        mock_viewer = MagicMock()
-        widget = ShowSpectrum(mock_viewer)
+        viewer = make_napari_viewer()
+        widget = ShowSpectrum(viewer)
+        
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
         
         # Verify the checkbox exists
         assert hasattr(widget, '_invert_checkbox')
         assert widget._invert_checkbox.text == "Autoscale y-axis"
 
     @pytest.mark.qt
-    def test_reset_autoscale(self, qtbot):
+    def test_reset_autoscale(self, qtbot, make_napari_viewer):
         """Test the _reset_autoscale method."""
-        mock_viewer = MagicMock()
-        widget = ShowSpectrum(mock_viewer)
+        viewer = make_napari_viewer()
+        widget = ShowSpectrum(viewer)
+        
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
         
         # Modify the values
         widget.spectrum_ymax = 100
@@ -63,10 +72,13 @@ class TestShowSpectrum:
         assert widget.spectrum_ymin == 1E6
 
     @pytest.mark.qt
-    def test_load_spectrum_checks_layer_visibility(self, qtbot):
+    def test_load_spectrum_checks_layer_visibility(self, qtbot, make_napari_viewer):
         """Test that _load_spectrum returns early if layer is not visible."""
-        mock_viewer = MagicMock()
-        widget = ShowSpectrum(mock_viewer)
+        viewer = make_napari_viewer()
+        widget = ShowSpectrum(viewer)
+        
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
         
         # Create a mock layer with invisible state
         mock_layer = MagicMock()
@@ -84,10 +96,13 @@ class TestShowSpectrum:
         mock_layer.metadata['brimfile'].get_data.assert_not_called()
 
     @pytest.mark.qt
-    def test_load_spectrum_checks_coordinates_within_bounds(self, qtbot):
+    def test_load_spectrum_checks_coordinates_within_bounds(self, qtbot, make_napari_viewer):
         """Test that _load_spectrum returns early for out-of-bounds coordinates."""
-        mock_viewer = MagicMock()
-        widget = ShowSpectrum(mock_viewer)
+        viewer = make_napari_viewer()
+        widget = ShowSpectrum(viewer)
+        
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
         
         # Create a mock layer
         mock_layer = MagicMock()
@@ -105,10 +120,13 @@ class TestShowSpectrum:
         mock_layer.metadata['brimfile'].get_data.assert_not_called()
 
     @pytest.mark.qt
-    def test_load_spectrum_plots_spectrum(self, qtbot):
+    def test_load_spectrum_plots_spectrum(self, qtbot, make_napari_viewer):
         """Test that _load_spectrum plots the spectrum correctly."""
-        mock_viewer = MagicMock()
-        widget = ShowSpectrum(mock_viewer)
+        viewer = make_napari_viewer()
+        widget = ShowSpectrum(viewer)
+        
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
         
         # Create mock spectrum data
         frequencies = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
@@ -146,12 +164,15 @@ class TestShowSpectrumIntegration:
     """Integration tests for ShowSpectrum widget."""
 
     @pytest.mark.qt
-    def test_widget_creation_does_not_raise(self, qtbot):
+    def test_widget_creation_does_not_raise(self, qtbot, make_napari_viewer):
         """Test that creating the widget doesn't raise any errors."""
-        mock_viewer = MagicMock()
+        viewer = make_napari_viewer()
         
         # This should not raise
-        widget = ShowSpectrum(mock_viewer)
+        widget = ShowSpectrum(viewer)
+        
+        # Add widget to qtbot for proper cleanup (napari guideline)
+        qtbot.addWidget(widget.native)
         
         # Basic sanity checks
         assert widget is not None
